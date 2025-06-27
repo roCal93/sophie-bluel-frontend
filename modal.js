@@ -20,8 +20,18 @@ function openModal(e) {
     previouslyFocusedElement = document.querySelector(":focus")
     // Displays the modal
     modal.style.display = "flex"
+
+    // NOUVEAU : Initialise le contenu de la modal ICI
+    initializeModalContentOnOpen()
+
     // Sets the focus to the first element
-    focusables[0].focus()
+    setTimeout(() => {
+        focusables = Array.from(modal.querySelectorAll(focusableSelector))
+        if (focusables.length > 0) {
+            focusables[0].focus()
+        }
+    }, 100)
+
     // Makes the modal visible for an accessibility API
     modal.removeAttribute("aria-hidden")
     // The aria-modal attribute indicates whether an element is modal when displayed.
@@ -34,28 +44,40 @@ function openModal(e) {
     modal.querySelector(".modalStop").addEventListener("click", stopPropagation)
 }
 
-// Closes the modal
+// NOUVELLE FONCTION : Initialise le contenu SEULEMENT quand la modal s'ouvre
+function initializeModalContentOnOpen() {
+    // Récupère les projets depuis localStorage
+    let projects = window.localStorage.getItem("projects");
+    if (projects) {
+        projects = JSON.parse(projects);
+
+        // Nettoie le contenu existant
+        const titleModal = document.getElementById("titleModal");
+        const divContent = document.querySelector(".modalContent");
+        const btnModalContent = document.querySelector(".btnModalContent");
+
+        titleModal.innerHTML = "";
+        divContent.innerHTML = "";
+        btnModalContent.innerHTML = "";
+
+        // Appelle vos fonctions existantes
+        addPhotoBtnModal();
+        displayProjectsModal(projects);
+    }
+}
+
+// Reste du code modal.js inchangé...
 function closeModal(e) {
-    // If the modal is closed this function doesn't happen
     if (modal === null) return
-    // Puts the focus to the last element focused before the modal was displayed
     if (previouslyFocusedElement !== null) previouslyFocusedElement.focus()
     e.preventDefault()
-    // Undisplays the modal
     modal.style.display = "none"
-    // Hides the modal for an accessibility API
     modal.setAttribute("aria-hidden", "true")
-    // Removes the aria-modal attribute
     modal.removeAttribute("aria-modal")
-    // Deletes the eventListener that closes the modal when a click happens outside
     modal.removeEventListener("click", closeModal)
-    // Deletes the eventListener that closes the modal when a click happens on the cross
     modal.querySelector(".closeModal").removeEventListener("click", closeModal)
-    // Deletes the eventListener that doesn't close the modal when a click happens inside the modal
     modal.querySelector(".modalStop").removeEventListener("click", stopPropagation)
-    // Resets the modal
     modal = null
-    // Returns the modal to the first part 
     const photoBtnModal = document.querySelector(".photoBtnModal")
     if (photoBtnModal && photoBtnModal.style.display === "none") {
         const arrowLeft = document.querySelector(".fa-arrow-left")
@@ -63,12 +85,10 @@ function closeModal(e) {
     }
 }
 
-// Function that stops the propagation of an event
 function stopPropagation(e) {
     e.stopPropagation()
 }
 
-// Function that allows to navigate in a loop in the modal
 function focusInModal(e) {
     e.preventDefault()
     let index = focusables.findIndex(f => f === modal.querySelector(":focus"))
@@ -86,16 +106,13 @@ function focusInModal(e) {
     focusables[index].focus()
 }
 
-// Utilise la délégation d'événements pour gérer tous les liens modaux (existants et futurs)
 document.addEventListener('click', function (e) {
     const modalLink = e.target.closest('.aModalLink')
     if (modalLink) {
-        console.log('Modal link clicked:', modalLink); // Debug
         openModal(e);
     }
 });
 
-// Closes the modal when the escape key is down or focus on the modal if the tab key is down and the modal is displayed
 window.addEventListener("keydown", function (e) {
     if (e.key === "Escape" || e.key === "Esc") {
         closeModal(e)
