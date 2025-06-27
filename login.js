@@ -1,138 +1,153 @@
-// Use shared config (Option A) or rename variable (Option B)
-// Option A: Remove API_URL declaration and use shared config
-const { API_URL } = window.AppConfig;
+// login.js - Updated with better form detection
+console.log('🔍 Login script loading...');
 
-// Option B: Uncomment this line instead if not using shared config
-// const LOGIN_API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:5678/api' : 'https://sophiebluel-production-c545.up.railway.app/api';
+// Wait for DOM to be fully loaded
+document.addEventListener('DOMContentLoaded', function () {
+    console.log('🔍 DOM loaded, looking for form...');
 
-// Gets the login form from the html - use ID selector
-const form = document.querySelector('#loginForm');
+    // Try multiple selectors to find the form
+    const form = document.querySelector('#loginForm') ||
+        document.querySelector('.loginForm') ||
+        document.querySelector('form');
 
-// Check if form exists
-if (!form) {
-    console.error('Login form not found!');
-}
+    console.log('🔍 Form found:', form);
 
-// Listens when the submit button from the login form is clicked 
-form?.addEventListener("submit", async function (event) {
-    // Block the reload of the page 
-    event.preventDefault();
-
-    // Clear any existing error messages
-    clearError();
-
-    // Gets the value from the input of the login form
-    const formData = {
-        "email": document.getElementById("email").value.trim(),
-        "password": document.getElementById("pass").value
-    };
-
-    // Basic validation
-    if (!formData.email || !formData.password) {
-        displayError("Veuillez remplir tous les champs.");
+    if (!form) {
+        console.error('❌ Login form not found!');
+        console.log('Available elements:', {
+            'forms': document.querySelectorAll('form'),
+            'loginForm ID': document.getElementById('loginForm'),
+            'loginForm class': document.querySelector('.loginForm')
+        });
         return;
     }
 
-    try {
-        // Converts the data from the input into json
-        const formDataJson = JSON.stringify(formData);
+    // Use shared config
+    const { API_URL } = window.AppConfig;
+    console.log('🔧 Using API URL:', API_URL);
 
-        // Sends the data to the server and retrieves the server response
-        const response = await fetch(`${API_URL}/users/login`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "accept": "application/json"
-            },
-            body: formDataJson,
-        });
+    // Form submit handler
+    form.addEventListener("submit", async function (event) {
+        console.log('📝 Form submitted');
+        event.preventDefault();
 
-        // Executes if status is ok
-        if (response.status === 200) {
-            // Converts the response to a javascript object 
-            const data = await response.json();
+        // Clear any existing error messages
+        clearError();
 
-            // Saves the token in localStorage
-            localStorage.setItem("token", data.token);
+        // Get form data
+        const emailInput = document.getElementById("email");
+        const passwordInput = document.getElementById("pass");
 
-            // Optionally save userId if returned
-            if (data.userId) {
-                localStorage.setItem("userId", data.userId);
-            }
-
-            console.log("✅ Login successful, redirecting...");
-
-            // Redirects to the home page - adjust path as needed
-            window.location.href = "./index.html";
-
-        } else if (response.status === 401) {
-            displayError("E-mail ou mot de passe incorrect");
-        } else if (response.status === 404) {
-            displayError("Utilisateur non trouvé");
-        } else {
-            const errorData = await response.json().catch(() => ({}));
-            displayError(errorData.message || "Erreur lors de la connexion");
+        if (!emailInput || !passwordInput) {
+            console.error('❌ Form inputs not found');
+            displayError("Erreur: Champs de formulaire non trouvés");
+            return;
         }
 
-    } catch (error) {
-        console.error("Login error:", error);
-        displayError("Un problème est survenu. Veuillez réessayer plus tard.");
+        const formData = {
+            "email": emailInput.value.trim(),
+            "password": passwordInput.value
+        };
+
+        // Basic validation
+        if (!formData.email || !formData.password) {
+            displayError("Veuillez remplir tous les champs.");
+            return;
+        }
+
+        console.log('📤 Sending login request...');
+
+        try {
+            const formDataJson = JSON.stringify(formData);
+
+            const response = await fetch(`${API_URL}/users/login`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "accept": "application/json"
+                },
+                body: formDataJson,
+            });
+
+            console.log('📥 Response received:', response.status);
+
+            if (response.status === 200) {
+                const data = await response.json();
+                console.log('✅ Login successful');
+
+                // Save token
+                localStorage.setItem("token", data.token);
+                if (data.userId) {
+                    localStorage.setItem("userId", data.userId);
+                }
+
+                // Redirect
+                window.location.href = "./index.html";
+
+            } else if (response.status === 401 || response.status === 404) {
+                displayError("E-mail ou mot de passe incorrect");
+            } else {
+                const errorData = await response.json().catch(() => ({}));
+                displayError(errorData.message || "Erreur lors de la connexion");
+            }
+
+        } catch (error) {
+            console.error("❌ Login error:", error);
+            displayError("Un problème est survenu. Veuillez réessayer plus tard.");
+        }
+    });
+
+    // Function to display error messages
+    function displayError(message) {
+        let spanErrorMessage = document.getElementById("errorMessage");
+
+        if (!spanErrorMessage) {
+            spanErrorMessage = document.createElement("span");
+            spanErrorMessage.id = "errorMessage";
+            spanErrorMessage.className = "error-message";
+            spanErrorMessage.style.cssText = `
+                color: #d63031;
+                font-size: 14px;
+                margin-top: 10px;
+                display: block;
+                text-align: center;
+                background-color: #ffe6e6;
+                padding: 10px;
+                border-radius: 4px;
+                border: 1px solid #d63031;
+            `;
+            form.appendChild(spanErrorMessage);
+        }
+        spanErrorMessage.innerText = message;
+    }
+
+    // Function to clear error messages
+    function clearError() {
+        const errorMessage = document.getElementById("errorMessage");
+        if (errorMessage) {
+            errorMessage.remove();
+        }
     }
 });
 
-// Function to display an error message
-function displayError(message) {
-    let spanErrorMessage = document.getElementById("errorMessage");
-
-    if (!spanErrorMessage) {
-        const popup = document.querySelector("#loginForm");
-        spanErrorMessage = document.createElement("span");
-        spanErrorMessage.id = "errorMessage";
-        spanErrorMessage.className = "error-message";
-        spanErrorMessage.style.color = "red";
-        spanErrorMessage.style.display = "block";
-        spanErrorMessage.style.marginTop = "10px";
-        spanErrorMessage.innerText = message;
-        popup.appendChild(spanErrorMessage);
-    } else {
-        spanErrorMessage.innerText = message;
-    }
-}
-
-// Function to clear error messages
-function clearError() {
-    const errorMessage = document.getElementById("errorMessage");
-    if (errorMessage) {
-        errorMessage.remove();
-    }
-}
-
-// Utility function to get the token
+// Utility functions (outside DOMContentLoaded)
 function getAuthToken() {
     return localStorage.getItem("token");
 }
 
-// Function to check if user is authenticated
 function isAuthenticated() {
     return !!getAuthToken();
 }
 
-// Function to logout
 function logout() {
     localStorage.removeItem("token");
     localStorage.removeItem("userId");
-    localStorage.removeItem("projects"); // Clear cached projects too
-
-    // Adjust path based on your file structure
-    const loginPath = window.location.pathname.includes('/FrontEnd/')
-        ? '/FrontEnd/login.html'
-        : './login.html';
-
-    window.location.href = loginPath;
+    localStorage.removeItem("projects");
+    window.location.href = "./login.html";
 }
 
 // Auto-redirect if already logged in
 if (isAuthenticated() && window.location.pathname.includes('login.html')) {
-    console.log("User already logged in, redirecting...");
+    console.log("✅ User already logged in, redirecting...");
     window.location.href = "./index.html";
 }
