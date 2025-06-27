@@ -21,16 +21,8 @@ function openModal(e) {
     // Displays the modal
     modal.style.display = "flex"
 
-    // NOUVEAU : Initialise le contenu de la modal ICI
-    initializeModalContentOnOpen()
-
     // Sets the focus to the first element
-    setTimeout(() => {
-        focusables = Array.from(modal.querySelectorAll(focusableSelector))
-        if (focusables.length > 0) {
-            focusables[0].focus()
-        }
-    }, 100)
+    focusables[0].focus()
 
     // Makes the modal visible for an accessibility API
     modal.removeAttribute("aria-hidden")
@@ -44,29 +36,7 @@ function openModal(e) {
     modal.querySelector(".modalStop").addEventListener("click", stopPropagation)
 }
 
-// NOUVELLE FONCTION : Initialise le contenu SEULEMENT quand la modal s'ouvre
-function initializeModalContentOnOpen() {
-    // Récupère les projets depuis localStorage
-    let projects = window.localStorage.getItem("projects");
-    if (projects) {
-        projects = JSON.parse(projects);
-
-        // Nettoie le contenu existant
-        const titleModal = document.getElementById("titleModal");
-        const divContent = document.querySelector(".modalContent");
-        const btnModalContent = document.querySelector(".btnModalContent");
-
-        titleModal.innerHTML = "";
-        divContent.innerHTML = "";
-        btnModalContent.innerHTML = "";
-
-        // Appelle vos fonctions existantes
-        addPhotoBtnModal();
-        displayProjectsModal(projects);
-    }
-}
-
-// Reste du code modal.js inchangé...
+// Closes the modal
 function closeModal(e) {
     if (modal === null) return
     if (previouslyFocusedElement !== null) previouslyFocusedElement.focus()
