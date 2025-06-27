@@ -1,10 +1,40 @@
 
 /////////////////////////////////////////////// Configuration API ////////////////////////////////////////////////////////////////////////////
+// Unified API configuration
+const getApiConfig = () => {
+    const hostname = window.location.hostname;
+    const isProduction = hostname === 'rocal93.github.io' || hostname.includes('github.io');
 
-// Configuration de l'API - détecte automatiquement l'environnement
-const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? 'http://localhost:5678/api'
-    : 'https://sophiebluel-production-c545.up.railway.app/api';
+    return {
+        API_URL: isProduction
+            ? 'https://sophiebluel-production-c545.up.railway.app/api'
+            : 'http://localhost:5678/api',
+        API_BASE_URL: isProduction
+            ? 'https://sophiebluel-production-c545.up.railway.app'
+            : 'http://localhost:5678'
+    };
+};
+
+const { API_URL, API_BASE_URL } = getApiConfig();
+console.log('🔧 Using API URL:', API_URL);
+console.log('🔧 Using BASE URL:', API_BASE_URL);
+
+// Helper function to correct image URLs
+function correctImageUrl(imageUrl) {
+    if (!imageUrl) return '';
+
+    // Replace localhost URLs with production URLs when needed
+    if (window.location.hostname === 'rocal93.github.io' || window.location.hostname.includes('github.io')) {
+        return imageUrl.replace('http://localhost:5678', API_BASE_URL);
+    }
+
+    // Ensure HTTPS in production
+    if (imageUrl.startsWith('http://') && !imageUrl.includes('localhost')) {
+        return imageUrl.replace('http://', 'https://');
+    }
+
+    return imageUrl;
+}
 
 /////////////////////////////////////////////// Project Homepage ////////////////////////////////////////////////////////////////////////////
 
@@ -243,56 +273,47 @@ function displayProjectError(message) {
     }
 }
 
-// Configuration automatique de l'URL selon l'environnement
-const API_BASE_URL = window.location.hostname === 'rocal93.github.io'
-    ? 'https://sophiebluel-production-c545.up.railway.app'
-    : 'http://localhost:5678';
-
-console.log('🔧 Using API URL:', API_BASE_URL);
-
-// Function that displays the different projects on homepage
+// Updated displayProjects function
 function displayProjects(projects) {
     for (let i = 0; i < projects.length; i++) {
-        // Current project is the project that iterates
         const currentProject = projects[i];
-        // Retrieves the DOM element that will host the projects
         const divGallery = document.querySelector(".gallery");
-        // Creates an element dedicated to a project
         const projectElement = document.createElement("figure");
         projectElement.dataset.id = projects[i].id;
-        projectElement.classList.add("projectsHome")
+        projectElement.classList.add("projectsHome");
 
-        // Creates elements
         const imageElement = document.createElement("img");
 
-        // 🔧 CORRECTION: Remplace l'URL localhost par l'URL Railway si nécessaire
-        const correctedImageUrl = currentProject.imageUrl.replace(
-            'http://localhost:5678',
-            API_BASE_URL
-        );
-
-        imageElement.src = correctedImageUrl;
+        // 🔧 Use the helper function to correct URLs
+        imageElement.src = correctImageUrl(currentProject.imageUrl);
         imageElement.alt = currentProject.title;
 
-        // Gestion d'erreur pour les images (optionnel mais recommandé)
+        // Enhanced error handling
         imageElement.onerror = function () {
             console.error('❌ Failed to load image:', this.src);
+            console.error('❌ Original URL:', currentProject.imageUrl);
             this.style.backgroundColor = '#f0f0f0';
             this.style.display = 'flex';
             this.style.alignItems = 'center';
             this.style.justifyContent = 'center';
-            this.alt = 'Image non disponible';
+            this.style.minHeight = '200px';
+            this.innerHTML = '<span style="color: #666;">Image non disponible</span>';
+        };
+
+        // Add loading event for debugging
+        imageElement.onload = function () {
+            console.log('✅ Image loaded successfully:', this.src);
         };
 
         const titleElement = document.createElement("figcaption");
         titleElement.innerText = currentProject.title;
 
-        // Appends elements
         divGallery.appendChild(projectElement);
         projectElement.appendChild(imageElement);
         projectElement.appendChild(titleElement);
     }
 }
+
 
 // Function that displays an error message if the API doesn't work when displaying the filter buttons
 function displayCategoryError(message) {
@@ -322,48 +343,49 @@ function addPhotoBtnModal() {
 }
 
 // Function that displays the project in the modal 
+
 function displayProjectsModal(projects) {
-    // Only creates the modal gallery if it doesn't already exist 
     if (document.querySelector(".modalGallery") === null) {
-        // Adds the title
-        const titleModal = document.getElementById("titleModal")
-        titleModal.innerHTML = "Galerie photo"
-        // Retrieves the DOM element that will host the modal gallery
-        const divContent = document.querySelector(".modalContent")
-        // Creates an element dedicated to host the projects
+        const titleModal = document.getElementById("titleModal");
+        titleModal.innerHTML = "Galerie photo";
+        const divContent = document.querySelector(".modalContent");
         let divGallery = document.createElement("div");
-        divGallery.classList.add("modalGallery")
-        // Appends element
+        divGallery.classList.add("modalGallery");
         divContent.appendChild(divGallery);
     }
 
     for (let i = 0; i < projects.length; i++) {
-        // Current project is the project that iterates
         const currentProject = projects[i];
-        // Retrieves the DOM element that will host the projects
-        const divGallery = document.querySelector(".modalGallery")
-        // Creates an element dedicated to a project
+        const divGallery = document.querySelector(".modalGallery");
         const projectElement = document.createElement("figure");
         projectElement.dataset.id = projects[i].id;
-        projectElement.classList.add("projectsModal")
-        // Creates element trash
+        projectElement.classList.add("projectsModal");
+
         const trashIcon = document.createElement("button");
-        trashIcon.classList.add("btnTrash")
-        trashIcon.innerHTML = '<i class="fa-solid fa-trash-can"></i>'
-        // Adds the attribute project id to the trash element 
-        trashIcon.dataset.id = projects[i].id
-        // Creates image element
+        trashIcon.classList.add("btnTrash");
+        trashIcon.innerHTML = '<i class="fa-solid fa-trash-can"></i>';
+        trashIcon.dataset.id = projects[i].id;
+
         const imageElement = document.createElement("img");
-        imageElement.src = currentProject.imageUrl;
+
+        // 🔧 Apply URL correction here too
+        imageElement.src = correctImageUrl(currentProject.imageUrl);
         imageElement.alt = currentProject.title;
-        // Appends elements
+
+        // Add error handling for modal images
+        imageElement.onerror = function () {
+            console.error('❌ Failed to load modal image:', this.src);
+            this.style.backgroundColor = '#f0f0f0';
+            this.style.minHeight = '100px';
+            this.alt = 'Image non disponible';
+        };
+
         divGallery.appendChild(projectElement);
         projectElement.appendChild(imageElement);
-        projectElement.appendChild(trashIcon)
+        projectElement.appendChild(trashIcon);
     }
-    deleteProject(projects)
+    deleteProject(projects);
 }
-
 // Function that deletes the project
 function deleteProject(projects) {
     // Loop that iterates for each project
