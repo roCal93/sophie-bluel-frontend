@@ -243,6 +243,13 @@ function displayProjectError(message) {
     }
 }
 
+// Configuration automatique de l'URL selon l'environnement
+const API_BASE_URL = window.location.hostname === 'rocal93.github.io'
+    ? 'https://sophiebluel-production-c545.up.railway.app'
+    : 'http://localhost:5678';
+
+console.log('🔧 Using API URL:', API_BASE_URL);
+
 // Function that displays the different projects on homepage
 function displayProjects(projects) {
     for (let i = 0; i < projects.length; i++) {
@@ -254,12 +261,32 @@ function displayProjects(projects) {
         const projectElement = document.createElement("figure");
         projectElement.dataset.id = projects[i].id;
         projectElement.classList.add("projectsHome")
+
         // Creates elements
         const imageElement = document.createElement("img");
-        imageElement.src = currentProject.imageUrl;
+
+        // 🔧 CORRECTION: Remplace l'URL localhost par l'URL Railway si nécessaire
+        const correctedImageUrl = currentProject.imageUrl.replace(
+            'http://localhost:5678',
+            API_BASE_URL
+        );
+
+        imageElement.src = correctedImageUrl;
         imageElement.alt = currentProject.title;
+
+        // Gestion d'erreur pour les images (optionnel mais recommandé)
+        imageElement.onerror = function () {
+            console.error('❌ Failed to load image:', this.src);
+            this.style.backgroundColor = '#f0f0f0';
+            this.style.display = 'flex';
+            this.style.alignItems = 'center';
+            this.style.justifyContent = 'center';
+            this.alt = 'Image non disponible';
+        };
+
         const titleElement = document.createElement("figcaption");
         titleElement.innerText = currentProject.title;
+
         // Appends elements
         divGallery.appendChild(projectElement);
         projectElement.appendChild(imageElement);
