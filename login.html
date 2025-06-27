@@ -28,16 +28,18 @@
         </nav>
     </header>
     <main>
-        <section id="login">
+        <section id="login" class="login">
             <h2>Log In</h2>
             <!-- Make sure ALL form elements are inside the <form> tags -->
             <form id="loginForm" class="loginForm">
-                <label for="email">E-mail</label>
-                <input type="email" id="email" name="email" autocomplete="email" required>
-
-                <label for="pass">Mot de passe</label>
-                <input type="password" id="pass" name="password" autocomplete="current-password" required>
-
+                <div class="loginInput">
+                    <label for="email">E-mail</label>
+                    <input type="email" id="email" name="email" autocomplete="email" required>
+                </div>
+                <div class="loginInput">
+                    <label for="pass">Mot de passe</label>
+                    <input type="password" id="pass" name="password" autocomplete="current-password" required>
+                </div>
                 <input type="submit" value="Se connecter">
 
                 <!-- Link should be outside the form -->
