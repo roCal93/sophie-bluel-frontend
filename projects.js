@@ -1,3 +1,4 @@
+
 /////////////////////////////////////////////// Configuration API ////////////////////////////////////////////////////////////////////////////
 
 // Configuration de l'API - détecte automatiquement l'environnement
@@ -7,30 +8,37 @@ const API_URL = window.location.hostname === 'localhost' || window.location.host
 
 /////////////////////////////////////////////// Project Homepage ////////////////////////////////////////////////////////////////////////////
 
-// Gets current projects in the local storage if applicable
-let projects = window.localStorage.getItem("projects");
+// Fonction async pour charger les projets
+async function loadProjects() {
+    // Gets current projects in the local storage if applicable
+    let projects = window.localStorage.getItem("projects");
 
-if (projects === null) {
-    try {
-        // Gets projects from API
-        const reponse = await fetch(`${API_URL}/works`);
-        // Transforms the projects format into JSON
-        projects = await reponse.json();
-        // Takes a JavaScript object and transforms it into JSON string
-        const jsonProjects = JSON.stringify(projects);
-        // Puts projects in the local storage 
-        window.localStorage.setItem("projects", jsonProjects);
-    } catch (error) {
-        console.log(error)
-        // line 224
-        displayProjectError("Un problème est survenu lors du chargement des projets. Veuillez réessayer plus tard.");
+    if (projects === null) {
+        try {
+            // Gets projects from API
+            const reponse = await fetch(`${API_URL}/works`);
+            // Transforms the projects format into JSON
+            projects = await reponse.json();
+            // Takes a JavaScript object and transforms it into JSON string
+            const jsonProjects = JSON.stringify(projects);
+            // Puts projects in the local storage 
+            window.localStorage.setItem("projects", jsonProjects);
+        } catch (error) {
+            console.log(error)
+            // line 224
+            displayProjectError("Un problème est survenu lors du chargement des projets. Veuillez réessayer plus tard.");
+            return; // Sort de la fonction en cas d'erreur
+        }
+    } else {
+        // Takes a JSON string and transforms it into a JavaScript object
+        projects = JSON.parse(projects);
     }
-} else {
-    // Takes a JSON string and transforms it into a JavaScript object
-    projects = JSON.parse(projects);
+    // Displays all the projects, line: 239
+    displayProjects(projects);
 }
-// Displays all the projects, line: 239
-displayProjects(projects);
+
+// Appel de la fonction au chargement de la page
+loadProjects();
 
 ////////////////////////////////////////////// Filter Button Homepage ///////////////////////////////////////////////////////////////////
 
