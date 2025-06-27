@@ -1,5 +1,7 @@
-// Checks if a token exists and changes from home page to admin page if applicable
-checkTokenExists()
+// Wait for DOM to be fully loaded before checking token
+document.addEventListener('DOMContentLoaded', function () {
+    checkTokenExists();
+});
 
 function checkTokenExists() {
     // Checks in localStorage if the token exists
@@ -13,15 +15,21 @@ function checkTokenExists() {
 // Function that changes the login button into a logout button and deletes the token when clicked
 function changeLoginIntoLogoutBtn() {
     const logout = document.querySelector(".logout");
-    logout.innerHTML = "logout";
-    logout.href = "#";
-    // Deletes the token from localStorage when the "logout" button is clicked
-    logout.addEventListener("click", function () {
-        // Remove token and userId from localStorage
-        localStorage.removeItem("token");
-        localStorage.removeItem("userId");
-        window.location.reload();
-    });
+
+    if (logout) {
+        logout.innerHTML = "logout";
+        logout.href = "#";
+        // Deletes the token from localStorage when the "logout" button is clicked
+        logout.addEventListener("click", function (e) {
+            e.preventDefault(); // Prevent default link behavior
+            // Remove token and userId from localStorage
+            localStorage.removeItem("token");
+            localStorage.removeItem("userId");
+            window.location.reload();
+        });
+    } else {
+        console.error("Logout element not found");
+    }
 }
 
 // Function that creates an editing banner under the header
@@ -39,9 +47,15 @@ function addEditionBanner() {
 // Function that removes filters and adds a button to edit projects
 function removeFilterAndAddModifyBtn() {
     const filters = document.querySelector(".filters")
-    filters.remove();
+    if (filters) {
+        filters.remove();
+    }
+
     const titleMargin = document.querySelector(".adminMargin");
-    titleMargin.style.margin = '0em 1em 3em 0em';
+    if (titleMargin) {
+        titleMargin.style.margin = '0em 1em 3em 0em';
+    }
+
     const parentModifyLink = document.getElementById("portfolio");
     const modifyLink = document.createElement("div");
     const childGallery = document.querySelector(".gallery")
@@ -49,7 +63,11 @@ function removeFilterAndAddModifyBtn() {
     modifyLink.innerHTML = contenant;
     modifyLink.classList.add("modifyLink")
     // Gets the link at the top of the portfolio section
-    parentModifyLink.insertBefore(modifyLink, childGallery)
-    // Puts the link and the title in the same div
-    modifyLink.appendChild(titleMargin)
+    if (parentModifyLink && childGallery) {
+        parentModifyLink.insertBefore(modifyLink, childGallery)
+        // Puts the link and the title in the same div
+        if (titleMargin) {
+            modifyLink.appendChild(titleMargin)
+        }
+    }
 }
