@@ -82,13 +82,12 @@ function focusInModal(e) {
     focusables[index].focus()
 }
 
-// Gets links that open the modal and stock it in an array 
-const modalLink = Array.from(document.querySelectorAll(".aModalLink"))
-
-// Starts the openModal function when a click happens on links
-for (let i = 0; i < modalLink.length; i++) {
-    modalLink[i].addEventListener("click", openModal)
-}
+// Utilise la délégation d'événements pour gérer tous les liens modaux (existants et futurs)
+document.addEventListener('click', function (e) {
+    if (e.target.matches('.aModalLink') || e.target.closest('.aModalLink')) {
+        openModal(e);
+    }
+});
 
 // Closes the modal when the escape key is down or focus on the modal if the tab key is down and the modal is displayed
 window.addEventListener("keydown", function (e) {
@@ -99,5 +98,3 @@ window.addEventListener("keydown", function (e) {
         focusInModal(e)
     }
 })
-
-
