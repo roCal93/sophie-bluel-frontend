@@ -8,91 +8,79 @@ const API_URL = window.location.hostname === 'localhost' || window.location.host
 
 /////////////////////////////////////////////// Project Homepage ////////////////////////////////////////////////////////////////////////////
 
-// Fonction async pour charger les projets
-async function loadProjects() {
-    // Gets current projects in the local storage if applicable
-    let projects = window.localStorage.getItem("projects");
+// Gets current projects in the local storage if applicable
+let projects = window.localStorage.getItem("projects");
 
-    if (projects === null) {
-        try {
-            // Gets projects from API
-            const reponse = await fetch(`${API_URL}/works`);
-            // Transforms the projects format into JSON
-            projects = await reponse.json();
-            // Takes a JavaScript object and transforms it into JSON string
-            const jsonProjects = JSON.stringify(projects);
-            // Puts projects in the local storage 
-            window.localStorage.setItem("projects", jsonProjects);
-        } catch (error) {
-            console.log(error)
-            // line 224
-            displayProjectError("Un problème est survenu lors du chargement des projets. Veuillez réessayer plus tard.");
-            return; // Sort de la fonction en cas d'erreur
-        }
-    } else {
-        // Takes a JSON string and transforms it into a JavaScript object
-        projects = JSON.parse(projects);
+if (projects === null) {
+    try {
+        // Gets projects from API
+        const reponse = await fetch(`${API_URL}/works`);
+        // Transforms the projects format into JSON
+        projects = await reponse.json();
+        // Takes a JavaScript object and transforms it into JSON string
+        const jsonProjects = JSON.stringify(projects);
+        // Puts projects in the local storage 
+        window.localStorage.setItem("projects", jsonProjects);
+    } catch (error) {
+        console.log(error)
+        // line 224
+        displayProjectError("Un problème est survenu lors du chargement des projets. Veuillez réessayer plus tard.");
     }
-    // Displays all the projects, line: 239
-    displayProjects(projects);
+} else {
+    // Takes a JSON string and transforms it into a JavaScript object
+    projects = JSON.parse(projects);
 }
+// Displays all the projects, line: 239
+displayProjects(projects);
 
-// Appel de la fonction au chargement de la page
-loadProjects();
 
 ////////////////////////////////////////////// Filter Button Homepage ///////////////////////////////////////////////////////////////////
 
-async function createFilters() {
-    // Retrieves the div where all the buttons go 
-    const btnFilter = document.querySelector(".filters");
-    // Creates filters button and adds text to them
-    const btnAll = document.createElement("button");
-    btnAll.innerHTML = "Tous";
-    // Appends button to the div 
-    btnFilter.appendChild(btnAll);
-    // Displays all the projects when "Tous" button is clicked
-    btnAll.addEventListener("click", function () {
-        // Clears screen and regenerates page with all parts 
-        document.querySelector(".gallery").innerHTML = "";
-        // line: 239
-        displayProjects(projects);
-    });
-
-    try {
-        // Request that retrieves category
-        const response = await fetch(`${API_URL}/categories`, {
-            headers: {
-                'accept': 'application/json'
-            }
-        });
-        // Transforms the response format into JSON
-        const category = await response.json()
-        // Loops to create a filter button for each category
-        for (let i = 0; i < category.length; i++) {
-            const btnFilter = document.querySelector(".filters");
-            const currentCategory = category[i];
-            const btnCategory = document.createElement("button");
-            btnCategory.innerHTML = currentCategory.name
-            // Appends buttons to the div 
-            btnFilter.appendChild(btnCategory)
-            btnCategory.addEventListener("click", function () {
-                const projectsFiltrees = projects.filter(function (project) {
-                    return project.categoryId === currentCategory.id;
-                });
-                // Clears screen and regenerates page with filtered parts only
-                document.querySelector(".gallery").innerHTML = "";
-                // line: 239
-                displayProjects(projectsFiltrees);
-            })
+// Retrieves the div where all the buttons go 
+const btnFilter = document.querySelector(".filters");
+// Creates filters button and adds text to them
+const btnAll = document.createElement("button");
+btnAll.innerHTML = "Tous";
+// Appends button to the div 
+btnFilter.appendChild(btnAll);
+// Displays all the projects when "Tous" button is clicked
+btnAll.addEventListener("click", function () {
+    // Clears screen and regenerates page with all parts 
+    document.querySelector(".gallery").innerHTML = "";
+    // line: 239
+    displayProjects(projects);
+});
+try {
+    // Request that retrieves category
+    const response = await fetch(`${API_URL}/categories`, {
+        headers: {
+            'accept': 'application/json'
         }
-    } catch (error) {
-        // line: 263
-        displayCategoryError("Un problème est survenu lors du chargement des catégories. Veuillez réessayer plus tard.");
+    });
+    // Transforms the response format into JSON
+    const category = await response.json()
+    // Loops to create a filter button for each category
+    for (let i = 0; i < category.length; i++) {
+        const btnFilter = document.querySelector(".filters");
+        const currentCategory = category[i];
+        const btnCategory = document.createElement("button");
+        btnCategory.innerHTML = currentCategory.name
+        // Appends buttons to the div 
+        btnFilter.appendChild(btnCategory)
+        btnCategory.addEventListener("click", function () {
+            const projectsFiltrees = projects.filter(function (project) {
+                return project.categoryId === currentCategory.id;
+            });
+            // Clears screen and regenerates page with filtered parts only
+            document.querySelector(".gallery").innerHTML = "";
+            // line: 239
+            displayProjects(projectsFiltrees);
+        })
     }
+} catch (error) {
+    // line: 263
+    displayCategoryError("Un problème est survenu lors du chargement des catégories. Veuillez réessayer plus tard.");
 }
-
-// Appel de la fonction pour créer les filtres
-createFilters();
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
