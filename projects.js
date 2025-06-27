@@ -42,51 +42,57 @@ loadProjects();
 
 ////////////////////////////////////////////// Filter Button Homepage ///////////////////////////////////////////////////////////////////
 
-// Retrieves the div where all the buttons go 
-const btnFilter = document.querySelector(".filters");
-// Creates filters button and adds text to them
-const btnAll = document.createElement("button");
-btnAll.innerHTML = "Tous";
-// Appends button to the div 
-btnFilter.appendChild(btnAll);
-// Displays all the projects when "Tous" button is clicked
-btnAll.addEventListener("click", function () {
-    // Clears screen and regenerates page with all parts 
-    document.querySelector(".gallery").innerHTML = "";
-    // line: 239
-    displayProjects(projects);
-});
-try {
-    // Request that retrieves category
-    const response = await fetch(`${API_URL}/categories`, {
-        headers: {
-            'accept': 'application/json'
-        }
+async function createFilters() {
+    // Retrieves the div where all the buttons go 
+    const btnFilter = document.querySelector(".filters");
+    // Creates filters button and adds text to them
+    const btnAll = document.createElement("button");
+    btnAll.innerHTML = "Tous";
+    // Appends button to the div 
+    btnFilter.appendChild(btnAll);
+    // Displays all the projects when "Tous" button is clicked
+    btnAll.addEventListener("click", function () {
+        // Clears screen and regenerates page with all parts 
+        document.querySelector(".gallery").innerHTML = "";
+        // line: 239
+        displayProjects(projects);
     });
-    // Transforms the response format into JSON
-    const category = await response.json()
-    // Loops to create a filter button for each category
-    for (let i = 0; i < category.length; i++) {
-        const btnFilter = document.querySelector(".filters");
-        const currentCategory = category[i];
-        const btnCategory = document.createElement("button");
-        btnCategory.innerHTML = currentCategory.name
-        // Appends buttons to the div 
-        btnFilter.appendChild(btnCategory)
-        btnCategory.addEventListener("click", function () {
-            const projectsFiltrees = projects.filter(function (project) {
-                return project.categoryId === currentCategory.id;
-            });
-            // Clears screen and regenerates page with filtered parts only
-            document.querySelector(".gallery").innerHTML = "";
-            // line: 239
-            displayProjects(projectsFiltrees);
-        })
+
+    try {
+        // Request that retrieves category
+        const response = await fetch(`${API_URL}/categories`, {
+            headers: {
+                'accept': 'application/json'
+            }
+        });
+        // Transforms the response format into JSON
+        const category = await response.json()
+        // Loops to create a filter button for each category
+        for (let i = 0; i < category.length; i++) {
+            const btnFilter = document.querySelector(".filters");
+            const currentCategory = category[i];
+            const btnCategory = document.createElement("button");
+            btnCategory.innerHTML = currentCategory.name
+            // Appends buttons to the div 
+            btnFilter.appendChild(btnCategory)
+            btnCategory.addEventListener("click", function () {
+                const projectsFiltrees = projects.filter(function (project) {
+                    return project.categoryId === currentCategory.id;
+                });
+                // Clears screen and regenerates page with filtered parts only
+                document.querySelector(".gallery").innerHTML = "";
+                // line: 239
+                displayProjects(projectsFiltrees);
+            })
+        }
+    } catch (error) {
+        // line: 263
+        displayCategoryError("Un problème est survenu lors du chargement des catégories. Veuillez réessayer plus tard.");
     }
-} catch (error) {
-    // line: 263
-    displayCategoryError("Un problème est survenu lors du chargement des catégories. Veuillez réessayer plus tard.");
 }
+
+// Appel de la fonction pour créer les filtres
+createFilters();
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
