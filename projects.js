@@ -116,11 +116,6 @@ try {
 
 //////////////////////////////////////////////////////// Modal //////////////////////////////////////////////////////////////////////////
 
-// Function that creates the add photo button, line 281
-addPhotoBtnModal()
-
-// Function that displays the project in the modal, line 290
-displayProjectsModal(projects)
 
 // Adds listener to create the second modal page
 let backArrow = null
