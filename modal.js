@@ -10,8 +10,10 @@ let previouslyFocusedElement = null
 // Opens the modal 
 function openModal(e) {
     e.preventDefault()
+    // Trouve le lien modal (celui qui a l'attribut href)
+    const modalLink = e.target.closest('.aModalLink')
     // Retrieves the id of the modal
-    modal = document.querySelector(e.target.getAttribute("href"))
+    modal = document.querySelector(modalLink.getAttribute("href"))
     // Retrieves all focusable elements of the modal in an array
     focusables = Array.from(modal.querySelectorAll(focusableSelector))
     // Saves the last element of the homepage that has focus
@@ -35,7 +37,7 @@ function openModal(e) {
 // Closes the modal
 function closeModal(e) {
     // If the modal is closed this function doesn't happen
-    if (modal === "none") return
+    if (modal === null) return
     // Puts the focus to the last element focused before the modal was displayed
     if (previouslyFocusedElement !== null) previouslyFocusedElement.focus()
     e.preventDefault()
@@ -54,8 +56,10 @@ function closeModal(e) {
     // Resets the modal
     modal = null
     // Returns the modal to the first part 
-    if (document.querySelector(".photoBtnModal").style.display === "none") {
-        document.querySelector(".fa-arrow-left").click()
+    const photoBtnModal = document.querySelector(".photoBtnModal")
+    if (photoBtnModal && photoBtnModal.style.display === "none") {
+        const arrowLeft = document.querySelector(".fa-arrow-left")
+        if (arrowLeft) arrowLeft.click()
     }
 }
 
@@ -84,7 +88,9 @@ function focusInModal(e) {
 
 // Utilise la délégation d'événements pour gérer tous les liens modaux (existants et futurs)
 document.addEventListener('click', function (e) {
-    if (e.target.matches('.aModalLink') || e.target.closest('.aModalLink')) {
+    const modalLink = e.target.closest('.aModalLink')
+    if (modalLink) {
+        console.log('Modal link clicked:', modalLink); // Debug
         openModal(e);
     }
 });
