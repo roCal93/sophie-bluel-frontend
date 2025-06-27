@@ -711,3 +711,15 @@ footer li {
 	font-weight: 300;
 	font-size: 14px;
 }
+
+.error-message {
+    color: #d63031;
+    font-size: 14px;
+    margin-top: 10px;
+    display: block;
+    text-align: center;
+}
+
+#loginForm {
+    position: relative;
+}
