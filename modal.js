@@ -36,7 +36,29 @@ function openModal(e) {
     modal.querySelector(".modalStop").addEventListener("click", stopPropagation)
 }
 
-// Closes the modal
+// NOUVELLE FONCTION : Initialise le contenu SEULEMENT quand la modal s'ouvre
+function initializeModalContentOnOpen() {
+    // Récupère les projets depuis localStorage
+    let projects = window.localStorage.getItem("projects");
+    if (projects) {
+        projects = JSON.parse(projects);
+
+        // Nettoie le contenu existant
+        const titleModal = document.getElementById("titleModal");
+        const divContent = document.querySelector(".modalContent");
+        const btnModalContent = document.querySelector(".btnModalContent");
+
+        titleModal.innerHTML = "";
+        divContent.innerHTML = "";
+        btnModalContent.innerHTML = "";
+
+        // Appelle vos fonctions existantes
+        addPhotoBtnModal();
+        displayProjectsModal(projects);
+    }
+}
+
+// Reste du code modal.js inchangé...
 function closeModal(e) {
     if (modal === null) return
     if (previouslyFocusedElement !== null) previouslyFocusedElement.focus()
